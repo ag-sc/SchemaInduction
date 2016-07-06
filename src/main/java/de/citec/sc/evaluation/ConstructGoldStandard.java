@@ -25,8 +25,19 @@ public class ConstructGoldStandard {
         }
         
         f = f.trim();
-        DocumentUtils.writeListToFile("goldStandard.txt", f, false);
+        DocumentUtils.writeListToFile("goldStandardObjectProperties.txt", f, false);
         System.out.println(classes.size());
+        
+        List<String> classes2 = DBpediaEndpoint.runQuery(getQuery("owl:DatatypeProperty"));
+        String f2 = "";
+        
+        for(String c : classes2){
+            f2+=c+"\n";
+        }
+        
+        f2 = f2.trim();
+        DocumentUtils.writeListToFile("goldStandardDatatypeProperties.txt", f2, false);
+        System.out.println(classes2.size());
     }
     
     private static String getQuery(String propertyType) {

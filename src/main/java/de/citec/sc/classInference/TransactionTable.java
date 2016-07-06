@@ -23,49 +23,10 @@ public class TransactionTable {
 
     public static void main(String[] args) {
         getObjectProperties();
-//        getDataProperties();
-//        System.out.println(DBpediaEndpoint.runQuery("SELECT DISTINCT ?s ?o WHERE { ?s <http://dbpedia.org/ontology/birthDate> ?o. }  LIMIT 10"));
+
     }
 
-//    public static void getDataProperties() {
-//        Set<String> properties = DocumentUtils.readFile(new File("dataProperties.txt"));
-//
-//        for (String property : properties) {
-//
-//            System.out.println(property);
-//            int resourceLimit = 10000;
-//
-//            List<String> resources = DBpediaEndpoint.runQuery(getQueryForResourcesDataProperty(property, resourceLimit));
-//
-//            String fileContent1 = "";
-//            String fileContent2 = "";
-//            String fileName = property.replace("http://dbpedia.org/ontology/", "") + "";
-//
-//            for (String r1 : resources) {
-//                String subject = r1.split("\t")[0];
-//                String object = r1.split("\t")[1].substring(r1.split("\t")[1].indexOf("http://www.w3.org/2001/XMLSchema"));
-//
-//                List<String> subjectClassesOnt = getClasses(subject, true);
-////            List<String> subjectClassesNotOnt = getClasses(subject, false);
-////            List<String> objectClassesNotOnt = getClasses(object, false);
-//
-//                for (String c1 : subjectClassesOnt) {
-//                    fileContent1 += c1 + "\n";
-//                }
-//                fileContent1 += "-\n";
-//
-//                fileContent1 += object + "\n";
-//
-//                fileContent1 += "=\n";
-//
-//            }
-//            fileContent1 = fileContent1.trim();
-//
-//            DocumentUtils.writeListToFile("/home/sherzod/Dropbox/DomainRangeData/DataProperties/" + fileName + ".txt", fileContent1, false);
-//        }
-//    }
     public static void getObjectProperties() {
-//        Set<String> properties = DocumentUtils.readFile(new File("objectProperties.txt"));
         Set<String> properties = DocumentUtils.readFile(new File("goldStandard.txt"));
 
         HashMap<String, Integer> globalMap = new LinkedHashMap<>();
