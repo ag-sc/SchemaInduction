@@ -58,6 +58,7 @@ public class DocumentUtils {
             bw.close();
             fw.close();
         } catch (IOException e) {
+            System.out.println("Problem with "+fileName);
             e.printStackTrace();
         }
     }

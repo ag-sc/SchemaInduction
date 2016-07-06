@@ -62,6 +62,8 @@ public class DBpediaEndpoint {
 
                 results.add(r.trim());
             }
+            
+            qexec.close();
         } catch (Exception e) {
 
         }

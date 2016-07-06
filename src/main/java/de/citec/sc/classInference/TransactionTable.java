@@ -22,17 +22,43 @@ import java.util.Set;
 public class TransactionTable {
 
     public static void main(String[] args) {
-        getObjectProperties();
+
+        System.out.println("Running transaction table generation : Object Properties");
+        
+        getProperties("goldStandardObjectProperties.txt", "object");
+        
+        System.out.println("Running transaction table generation : Datatype Properties");
+        getProperties("goldStandardDatatypeProperties.txt", "datatype");
 
     }
 
-    public static void getObjectProperties() {
-        Set<String> properties = DocumentUtils.readFile(new File("goldStandard.txt"));
+    public static void getProperties(String filePath, String type) {
+        Set<String> properties = DocumentUtils.readFile(new File(filePath));
 
         HashMap<String, Integer> globalMap = new LinkedHashMap<>();
 
+        File dir1 = new File("transactionTables/" + type + "/domainRange/");
+        File dir2 = new File("transactionTables/" + type + "/range/");
+        File dir3 = new File("transactionTables/" + type + "/domain/");
+
+        if (!dir1.exists()) {
+            dir1.mkdirs();
+        }
+        if (!dir2.exists()) {
+            dir2.mkdirs();
+        }
+        if (!dir3.exists()) {
+            dir3.mkdirs();
+        }
+
+        System.out.println(properties.size());
+        
+        int z=0;
         for (String property : properties) {
-            System.out.println(property);
+
+            z++;
+
+            System.out.println(property+"\t"+z);
 
             String domainClass = property.split("\t")[1];
             String rangeClass = property.split("\t")[2];
@@ -46,6 +72,11 @@ public class TransactionTable {
             String fileContent2 = "";
             String fileContent3 = "";
             String fileName = property.replace("http://dbpedia.org/ontology/", "") + "";
+            
+            if(fileName.contains("/")){
+                fileName = fileName.replace("/", "--");
+                        
+            }
 
             for (String r1 : resources) {
                 String subject = r1.split("\t")[0];
@@ -108,9 +139,13 @@ public class TransactionTable {
 
             }
 
-            DocumentUtils.writeListToFile("transactionTables/domainRange/" + fileName + ".txt", fileContent1, false);
-            DocumentUtils.writeListToFile("transactionTables/range/" + fileName + ".txt", fileContent3, false);
-            DocumentUtils.writeListToFile("transactionTables/domain/" + fileName + ".txt", fileContent2, false);
+            try {
+                DocumentUtils.writeListToFile(dir1.getPath() + "/" + fileName + ".txt", fileContent1, false);
+                DocumentUtils.writeListToFile(dir2.getPath() + "/" + fileName + ".txt", fileContent3, false);
+                DocumentUtils.writeListToFile(dir3.getPath() + "/" + fileName + ".txt", fileContent2, false);
+            } catch (Exception e) {
+                int z2 = 1;
+            }
         }
 
         String f = "";
@@ -119,7 +154,7 @@ public class TransactionTable {
         }
 
         f = f.trim();
-        DocumentUtils.writeListToFile("transactionTables/index.txt", f, false);
+        DocumentUtils.writeListToFile("transactionTables/index" + type + ".txt", f, false);
     }
 
     private static String getQueryForResources(String property, int resourceLimit) {
@@ -140,27 +175,9 @@ public class TransactionTable {
         return q;
     }
 
-    private static String getQueryForResourcesDataProperty(String property, int resourceLimit) {
-
-        String q = "PREFIX dbo: <http://dbpedia.org/ontology/>\n"
-                + "PREFIX res: <http://dbpedia.org/resource/>\n"
-                + "PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>\n"
-                + "PREFIX dbp: <http://dbpedia.org/property/>\n"
-                + "PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>\n"
-                + "PREFIX foaf: <http://xmlns.com/foaf/0.1/>\n"
-                + "PREFIX owl: <http://www.w3.org/2002/07/owl#>\n"
-                + "PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>\n"
-                + "PREFIX yago: <http://dbpedia.org/class/yago/> \n"
-                + "";
-
-        q += "SELECT DISTINCT ?s ?o WHERE { ?s <" + property + "> ?o. }  LIMIT " + resourceLimit;
-
-        return q;
-    }
-
     private static List<String> getClasses(String resource, boolean onlyOntology, String goldClass) {
         List<String> sClassesFromResource = DBpediaEndpoint.runQuery(getQueryForClasses(resource, onlyOntology));
-        
+
         List<String> sClassesFromGoldClass = DBpediaEndpoint.runQuery(getQueryForGoldClasses(onlyOntology, goldClass));
 
         Set<String> uniqueClasses = new HashSet<>();
@@ -173,7 +190,7 @@ public class TransactionTable {
             uniqueClasses.add(c2);
 
         }
-        
+
         for (String s : sClassesFromGoldClass) {
             uniqueClasses.add(s);
         }

@@ -24,6 +24,8 @@ import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
@@ -31,32 +33,50 @@ import java.util.Set;
  */
 public class FPGrowth {
 
-    public static void main(String[] arg) throws IOException {
+    public static void main(String[] args) {
+        try {
+            induceProperties("transactionTables/indexobject.txt", "goldStandardObjectProperties.txt", "object");
+        } catch (IOException ex) {
+            Logger.getLogger(FPGrowth.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        try {
+            induceProperties("transactionTables/indexdatatype.txt", "goldStandardDatatypeProperties.txt", "datatype");
+        } catch (IOException ex) {
+            Logger.getLogger(FPGrowth.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+
+    public static void induceProperties(String indexPath, String goldStandard, String type) throws IOException {
 
         HashMap<Integer, String> globalMap = new LinkedHashMap<>();
 
         //load the index of classes
-        Set<String> indexOfClasses = DocumentUtils.readFile(new File("transactionTables/index.txt"));
+        Set<String> indexOfClasses = DocumentUtils.readFile(new File(indexPath));
 
         for (String s : indexOfClasses) {
             globalMap.put(Integer.parseInt(s.split(" ")[1]), s.split(" ")[0]);
         }
 
-        Set<String> objProperties = DocumentUtils.readFile(new File("objectProperties.txt"));
-        Set<String> properties = DocumentUtils.readFile(new File("goldStandard.txt"));
+        Set<String> properties = DocumentUtils.readFile(new File(goldStandard));
 
         int c = 0;
 
         System.out.println(properties.size());
 
+        //create directories
+        File inducedDir = new File("induction/" + type);
+        if (!inducedDir.exists()) {
+            inducedDir.mkdirs();
+        }
+
         //delete old entries
-        File f1 = new File("onlyRangeTable.txt");
+        File f1 = new File(inducedDir.getPath() + "/onlyRangeTable.txt");
         f1.delete();
 
-        File f2 = new File("onlyDomainTable.txt");
+        File f2 = new File(inducedDir.getPath() + "/onlyDomainTable.txt");
         f2.delete();
 
-        File f3 = new File("domainRangeTable.txt");
+        File f3 = new File(inducedDir.getPath() + "/domainRangeTable.txt");
         f3.delete();
 
         String header = "Property;Induced;Confidence;T;GoldStandard;Same;MoreSpecific;LessSpecific\n";
@@ -68,62 +88,65 @@ public class FPGrowth {
 
         for (String property : properties) {
 
-//            if (!objProperties.contains(property.split("\t")[0])) {
-//                continue;
-//            }
+            try {
+                
+                String domainClass = property.split("\t")[1].replace("http://dbpedia.org/ontology/", "");
+                String rangeClass = property.split("\t")[2].replace("http://dbpedia.org/ontology/", "");
+                property = property.split("\t")[0].replace("http://dbpedia.org/ontology/", "");
 
-//            String header = "Precision_Domain;Precision_Range;Precision_DomainRange;Recall_Domain;Recall_Range;Recall_DomainRange;F1_Domain;F1_Range;F1_DomainRange;T;Domain;Range;Confidence;GoldDomain;GoldRange";
-            String domainClass = property.split("\t")[1].replace("http://dbpedia.org/ontology/", "");
-            String rangeClass = property.split("\t")[2].replace("http://dbpedia.org/ontology/", "");
-            property = property.split("\t")[0].replace("http://dbpedia.org/ontology/", "");
+                if (!(property.contains("composer") || property.contains("birthDate"))) {
+                    continue;
+                }
+                System.out.println(property + " " + c);
+                c++;
 
-//            if (!property.contains("composer")) {
-//                continue;
-//            }
-            System.out.println(property + " " + c);
-            c++;
+                String inputRange = "transactionTables/" + type + "/range/" + property + ".txt";
+                String inputDomain = "transactionTables/" + type + "/domain/" + property + ".txt";
+                String inputDomainRange = "transactionTables/" + type + "/domainRange/" + property + ".txt";
 
-            String inputRange = "transactionTables/range/" + property + ".txt";
-            String inputDomain = "transactionTables/domain/" + property + ".txt";
-            String inputDomainRange = "transactionTables/domainRange/" + property + ".txt";
+                for (double t = 1.0; t >= 0.1; t = t - 0.1) {
 
-            for (double t = 1.0; t >= 0.1; t = t - 0.1) {
+                    try {
+                        // the minimum support threshold
+                        double minsup = t; // means a minsup of 2 transaction (we used a relative support)
 
-                String data = "";
-                // the minimum support threshold
-                double minsup = t; // means a minsup of 2 transaction (we used a relative support)
+                        AlgoFPGrowth algo = new AlgoFPGrowth();
 
-                // Applying the FPGROWTH algorithmMainTestFPGrowth.java
-                AlgoFPGrowth algo = new AlgoFPGrowth();
-//                AlgoFPMax algoMax = new AlgoFPMax();
 
-                // Run the algorithm
-                // Note that here we use "null" as output file path because we want to keep the results into memory instead of saving to a file
-                Itemsets i1 = algo.runAlgorithm(inputRange, null, minsup);
-                algo = new AlgoFPGrowth();
-                Itemsets i2 = algo.runAlgorithm(inputDomain, null, minsup);
-                algo = new AlgoFPGrowth();
-                Itemsets i3 = algo.runAlgorithm(inputDomainRange, null, minsup);
+                        // Run the algorithm
+                        // Note that here we use "null" as output file path because we want to keep the results into memory instead of saving to a file
+                        Itemsets i1 = algo.runAlgorithm(inputRange, null, minsup);
+                        algo = new AlgoFPGrowth();
+                        Itemsets i2 = algo.runAlgorithm(inputDomain, null, minsup);
+                        algo = new AlgoFPGrowth();
+                        Itemsets i3 = algo.runAlgorithm(inputDomainRange, null, minsup);
 
-                //get all itemsets for 3 different approaches
-                HashMap<ItemSet, Integer> rangePatterns = processPatterns(i1.getLevels(), globalMap);
-                rangePatterns = SortUtils.sortByValue(rangePatterns);
-                HashMap<ItemSet, Integer> domainPatterns = processPatterns(i2.getLevels(), globalMap);
-                domainPatterns = SortUtils.sortByValue(domainPatterns);
-                HashMap<ItemSet, Integer> domainRangePatterns = processPatterns(i3.getLevels(), globalMap);
-                domainRangePatterns = SortUtils.sortByValue(domainRangePatterns);
+                        //get all itemsets for 3 different approaches
+                        HashMap<ItemSet, Integer> rangePatterns = processPatterns(i1.getLevels(), globalMap);
+                        rangePatterns = SortUtils.sortByValue(rangePatterns);
+                        HashMap<ItemSet, Integer> domainPatterns = processPatterns(i2.getLevels(), globalMap);
+                        domainPatterns = SortUtils.sortByValue(domainPatterns);
+                        HashMap<ItemSet, Integer> domainRangePatterns = processPatterns(i3.getLevels(), globalMap);
+                        domainRangePatterns = SortUtils.sortByValue(domainRangePatterns);
 
-                Set<String> goldDomain = new HashSet<>();
-                goldDomain.add(domainClass);
+                        Set<String> goldDomain = new HashSet<>();
+                        goldDomain.add(domainClass);
 
-                Set<String> goldRange = new HashSet<>();
-                goldRange.add(rangeClass);
+                        Set<String> goldRange = new HashSet<>();
+                        goldRange.add(rangeClass);
 
-                processDomainItemsets(property, domainPatterns, goldDomain, f2.getName(), round(t, 2));
-                processRangeItemsets(property, rangePatterns, goldRange, f1.getName(), round(t, 2));
-                processDomainRangeItemsets(property, domainRangePatterns, goldDomain, goldRange, f3.getName(), round(t, 2));
+                        processDomainItemsets(property, domainPatterns, goldDomain, f2.getName(), round(t, 2));
+                        processRangeItemsets(property, rangePatterns, goldRange, f1.getName(), round(t, 2));
+                        processDomainRangeItemsets(property, domainRangePatterns, goldDomain, goldRange, f3.getName(), round(t, 2));
+                    } catch (Exception e2) {
+                        System.out.println(property + "isn't induced for t=" + t);
+                    }
 
+                }
+            } catch (Exception e) {
+                System.out.println(property + "isn't induced");
             }
+
         }
     }
 
@@ -489,9 +512,7 @@ public class FPGrowth {
                     newClasses.add(c);
                     newClasses.add(newClass);
                 }
-            }
-
-            else {
+            } else {
                 newClasses.add(c);
             }
         }
