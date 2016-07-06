@@ -44,6 +44,13 @@ public class Main {
                 e.printStackTrace();
             }
         }
+        if (PARAMETERS.get(PARAM_RUN).equals("statistics")) {
+            try {
+                Statistics.main(args);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
     }
     private static void readParamsFromCommandLine(String[] args) {
         if (args != null && args.length > 0) {

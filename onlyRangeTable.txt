@@ -6628,3 +6628,8 @@ subsequentInfrastructure;Road;15;0.3;Infrastructure;0;1;0
 subsequentInfrastructure;RouteOfTransportation;15;0.3;Infrastructure;0;1;0
 subsequentInfrastructure;Infrastructure;15;0.3;Infrastructure;1;0;0
 subsequentInfrastructure;Place;15;0.3;Infrastructure;0;0;1
+subsequentInfrastructure;ArchitecturalStructure;15;0.2;Infrastructure;0;0;1
+subsequentInfrastructure;Road;15;0.2;Infrastructure;0;1;0
+subsequentInfrastructure;RouteOfTransportation;15;0.2;Infrastructure;0;1;0
+subsequentInfrastructure;Infrastructure;15;0.2;Infrastructure;1;0;0
+subsequentInfrastructure;Place;15;0.2;Infrastructure;0;0;1
