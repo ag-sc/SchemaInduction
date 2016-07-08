@@ -5,6 +5,9 @@
  */
 package de.citec.sc.classInference;
 
+import de.citec.sc.evaluation.Statistics;
+import de.citec.sc.evaluation.TransactionTableForEvaluation;
+import de.citec.sc.evaluation.FISMiningForEvaluation;
 import de.citec.sc.evaluation.ConstructGoldStandard;
 import java.util.HashMap;
 import java.util.Map;
@@ -20,19 +23,23 @@ public class Main {
     private static final String PARAM_RUN = "-r";
     
     public static void main(String[] args) {
+//        args = new String[2];
+//        args[0] ="-r";
+//        args[1] ="induceEvaluation";
+        
         readParamsFromCommandLine(args);
         
-        if (PARAMETERS.get(PARAM_RUN).equals("transaction")) {
+        if (PARAMETERS.get(PARAM_RUN).equals("transactionEvaluation")) {
             try {
-                TransactionTable.main(args);
+                TransactionTableForEvaluation.main(args);
             } catch (Exception e) {
                 e.printStackTrace();
             }
         }
         
-        if (PARAMETERS.get(PARAM_RUN).equals("induce")) {
+        if (PARAMETERS.get(PARAM_RUN).equals("induceEvaluation")) {
             try {
-                FPGrowth.main(args);
+                FISMiningForEvaluation.main(args);
             } catch (Exception e) {
                 e.printStackTrace();
             }
