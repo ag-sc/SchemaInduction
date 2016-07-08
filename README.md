@@ -13,4 +13,4 @@ To run the code build the project
 4) To print statistics about DBpedia object & datatype properties
 <p><b>java -jar SchemaInduction-1.0-jar-with-dependencies.jar -r statistics</b></p>
 
-To download the incuded data look under <a href="/ag-sc/SchemaInduction/tree/master/induction" class="js-navigation-open" id="59c7dfd682f57e303dedae6d1eadffc8-dec3658eba8b6c9097b6f942aea326b2d0cbe383" title="transactionTables">Induced Data</a>
+To download the incuded data look under <a href="https://github.com/ag-sc/SchemaInduction/tree/master/induction" class="js-navigation-open" title="transactionTables">Induced Data</a>
